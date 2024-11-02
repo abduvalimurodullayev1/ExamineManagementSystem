@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+{% endblock %}
+
+{% block userlinks %}
+    {{ block.super }}
+
+    <style>
+        #language-label, #language-form {
+            display: inline-block;
+            margin-right: 0.5em;
+            color: white;
+        }
+    </style>
+
+    <form id="language-form" method="post" action="{% url 'set_language' %}">
+        {% csrf_token %}
+        <label id="language-label" for="for-language">Language: </label>
+
+        <select name="language" id="for-language" onchange="changeLanguage(this.value)">
+            {% for lang_code, lang_name in LANGUAGES %}
+                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>{{ lang_name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <script>
+        function changeLanguage(languageCode) {
+            const form = document.getElementById('language-form');
+            console.log("Selected Language Code: ", languageCode); // Debugging line
+            form.elements.language.value = languageCode;
+            form.submit();
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,21 @@
+django
+psycopg2-binary
+python-environ
+django-cors-headers
+drf-yasg
+djangorestframework
+django-filter
+django-modeltranslation
+django-redis
+cryptography==41.0.7
+celery==5.3.6
+redis==5.0.1
+flower==2.0.1
+django-debug-toolbar==4.4.6
+django-rosetta== 0.10.1
+fcm-django==2.2.1
+firebase-admin==6.5.0
+celery==5.3.6
+django-filter==24.3
+django-jazzmin==3.0.1
+django-modeltranslation==0.19.10
