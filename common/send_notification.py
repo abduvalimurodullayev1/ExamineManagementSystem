@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def send_exam_notification(user, exam):
-    title = "Imtihon Eslatmasi"  # Yangi xabarni tayinlang
-    message = f"{exam.exam_name} imtihoni {exam.start_time} da boshlanadi."  # Yangi xabarni tayinlang
+    title = "Imtihon Eslatmasi"  
+    message = f"{exam.exam_name} imtihoni {exam.start_time} da boshlanadi." 
 
     if hasattr(user, 'notification_token') and user.notification_token:
         message = messaging.Message(
