@@ -23,7 +23,7 @@ urlpatterns = [
     path("SubmitAnswer/<int:exam_id>/", SubmitTestView.as_view(), name="submit_answer"),
     # path("QuestionDetail/<int:pk>/", QuestionDetail.as_view(), name="question"),
     path('api/reports/exams', ExamReportsView.as_view(), name='exam-reports'),
-    # path('api/reports/eksam/', ExamineResultViewSet.as_view({'get': 'list'}), name='exam-results-list'),
     path('results/pdf/', GeneratePdf.as_view(), name='generate_pdf'),
+    path('evaluation/', ProjectEvaluationView.as_view(), name='project-evaluation'),
 
 ]

@@ -248,3 +248,36 @@ class GeneratePdf(APIView):
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="exam_results.pdf"'
         return response
+
+
+class ProjectEvaluationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        evaluation_factors = {
+            "Foydalanuvchi roli va autentifikatsiya": {
+                "status": "Mavjud",
+                "improvements": "Qo'shimcha tasdiqlash va xavfsizlik funktsiyalari kiritilishi mumkin."
+            },
+            "Fanlar va imtihonlar uchun API": {
+                "status": "Asosiy CRUD operatsiyalari mavjud."
+            },
+            "Talabalarni imtihonga tayinlash va natijalar": {
+                "status": "Mavjud",
+                "improvements": "Yanada kengaytirish va soddalashtirish imkoniyatlari mavjud."
+            },
+            "Bildirishnomalar va push bildirishnomalar": {
+                "status": "Kiritilgan",
+                "improvements": "Yanada takomillashtirilishi mumkin."
+            },
+            "Monitoring va hisobotlar": {
+                "status": "Umumiy hisobotlar tayyorlash imkoniyati mavjud.",
+                "improvements": "Yanada yaxshilanishi kerak."
+            },
+            "Sinov va hujjatlash": {
+                "status": "Hali ham",
+                "improvements": "Batafsil testlar va hujjatlarni qo'shish zarurati mavjud."
+            }
+        }
+
+        return Response(evaluation_factors)

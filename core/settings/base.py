@@ -38,11 +38,14 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
 ]
 
 CUSTOM_APPS = [
-    "common",
+    # "common",
+    'common.apps.CommonConfig',
     "users",
+
 ]
 
 THIRD_PARTY_APPS = [
