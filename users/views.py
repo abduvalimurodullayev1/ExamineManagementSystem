@@ -172,13 +172,11 @@ class VerifyForgotEmailView(APIView):
         try:
             user = User.objects.get(email=email, verification_code=verification_code)
 
-            # Check if verification code is valid and not expired
             if user.activation_key_expires > timezone.now():
                 if new_password != confirm_password:
                     return Response({'message': 'Parol va tasdiqlash mos kelmadi.'},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-                # Set new password and mark as verified
                 user.set_password(new_password)
                 user.is_verified = True
                 user.save()
@@ -217,7 +215,7 @@ class ChangePasswordView(APIView):
                 user.set_password(password)
                 user.save()
 
-                cache.delete(f'user_{user.id}')  # Foydalanuvchi ma'lumotlarini keshdan olib tashlash
+                cache.delete(f'user_{user.id}')
 
                 return Response({'message': 'Parol muvaffaqiyatli o\'zgartirildi'}, status=status.HTTP_200_OK)
             else:

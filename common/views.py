@@ -1,5 +1,5 @@
 import redis
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Count
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
@@ -30,7 +30,6 @@ redis_client = redis.StrictRedis(
 )
 
 
-# Redis serverining sog‘ligini tekshiruvchi API
 @api_view(["GET"])
 def health_check_redis(request):
     try:
@@ -43,7 +42,6 @@ def health_check_redis(request):
         )
 
 
-# Subject modeliga oid API'lar
 class ListSubjectView(ListAPIView):
     serializer_class = SubjectSerializer
     queryset = Subjects.objects.all()
@@ -124,7 +122,7 @@ class AssignCreate(APIView):
         if serializer.is_valid():
             serializer.save()
             for student in exam.assigned_users.all():
-                send_exam_notification(student, exam)  # O'zgartirish kiritildi
+                send_exam_notification(student, exam)
             return Response({"message": "Talabalar muvaffaqiyatli tayinlandi"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -225,24 +223,42 @@ class StudentReportView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-from django.db.models import Sum, Count
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class GeneratePdf(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         results = ExamResult.objects.filter(student=request.user) \
-            .values('exam__exam_name') \
-            .annotate(total_score=Sum('score')) \
-            .annotate(passed_count=Count('passed', filter=Q(passed=True)))
+            .values('exam__exam_name', 'exam__id') \
+            .annotate(
+            total_score=Sum('score'),
+            passed_count=Count('passed', filter=Q(passed=True))
+        )
 
-        if not results:
+        detailed_results = []
+        for result in results:
+            exam_id = result['exam__id']
+            total_questions = Submission.objects.filter(exam_id=exam_id).count()
+            answered_questions = Submission.objects.filter(exam_id=exam_id, student=request.user).count()
+            correct_answers = Submission.objects.filter(exam_id=exam_id, student=request.user, is_correct=True).count()
+            incorrect_answers = answered_questions - correct_answers
+
+            result_data = {
+                'exam_name': result['exam__exam_name'],
+                'total_score': result['total_score'],
+                'status': 'Passed' if result['passed_count'] > 0 else 'Failed',
+                'total_questions': total_questions,
+                'answered_questions': answered_questions,
+                'correct_answers': correct_answers,
+                'incorrect_answers': incorrect_answers,
+                'email': request.user.email
+            }
+            detailed_results.append(result_data)
+
+        if not detailed_results:
             return Response("Topilmadi", status=status.HTTP_404_NOT_FOUND)
 
-        html_content = render_to_string('result.html', {'results': results})
-
+        html_content = render_to_string('result.html', {'results': detailed_results, 'user_email': request.user.email})
         pdf_file = HTML(string=html_content).write_pdf()
 
         response = HttpResponse(pdf_file, content_type='application/pdf')

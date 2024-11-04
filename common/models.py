@@ -88,12 +88,10 @@ class ExamResult(models.Model):
     class Meta:
         verbose_name = _("ExamResult")
         verbose_name_plural = _("ExamResults")
-        # unique_together = ('student', 'exam')  # Bu talabaga va imtihonga bo'lgan noyoblikni belgilaydi
 
     def calculate_and_save_result(self):
         score_percentage = self.exam.calculate_score(self.student)
 
-        # Yozuvni yangilash yoki yangisini yaratish
         exam_result, created = ExamResult.objects.get_or_create(student=self.student, exam=self.exam)
         exam_result.score = score_percentage
         exam_result.passed = score_percentage >= self.exam.passing_percentage
@@ -105,7 +103,7 @@ class Submission(models.Model):
     exam = models.ForeignKey(Examine, on_delete=models.CASCADE, verbose_name=_("Exam"))
     question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name=_("Question"))
     answer = models.CharField(max_length=100, verbose_name=_("Answer"))
-    is_correct = models.BooleanField(default=False, verbose_name=_("Is correct"))  # Qo'shilgan maydon
+    is_correct = models.BooleanField(default=False, verbose_name=_("Is correct"))
 
     def save(self, *args, **kwargs):
         self.is_correct = (self.answer == self.question.correct_answer)
