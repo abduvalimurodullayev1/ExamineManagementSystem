@@ -225,7 +225,6 @@ class StudentReportView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-from django.db.models import Sum, Count
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -234,17 +233,75 @@ class GeneratePdf(APIView):
 
     def get(self, request):
         results = ExamResult.objects.filter(student=request.user) \
-            .values('exam__exam_name') \
-            .annotate(total_score=Sum('score')) \
-            .annotate(passed_count=Count('passed', filter=Q(passed=True)))
+            .values('exam__exam_name', 'exam__id') \
+            .annotate(
+            total_score=Sum('score'),
+            passed_count=Count('passed', filter=Q(passed=True))
+        )
 
-        if not results:
+        detailed_results = []
+        for result in results:
+            exam_id = result['exam__id']
+            total_questions = Submission.objects.filter(exam_id=exam_id).count()
+            answered_questions = Submission.objects.filter(exam_id=exam_id, student=request.user).count()
+            correct_answers = Submission.objects.filter(exam_id=exam_id, student=request.user, is_correct=True).count()
+            incorrect_answers = answered_questions - correct_answers
+
+            result_data = {
+                'exam_name': result['exam__exam_name'],
+                'total_score': result['total_score'],
+                'status': 'Passed' if result['passed_count'] > 0 else 'Failed',
+                'total_questions': total_questions,
+                'answered_questions': answered_questions,
+                'correct_answers': correct_answers,
+                'incorrect_answers': incorrect_answers,
+                'email': request.user.email
+            }
+            detailed_results.append(result_data)
+
+        if not detailed_results:
             return Response("Topilmadi", status=status.HTTP_404_NOT_FOUND)
 
-        html_content = render_to_string('result.html', {'results': results})
-
+        html_content = render_to_string('result.html', {'results': detailed_results, 'user_email': request.user.email})
         pdf_file = HTML(string=html_content).write_pdf()
 
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="exam_results.pdf"'
         return response
+
+
+class ProjectEvaluationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        evaluation_factors = {
+            "Foydalanuvchi roli va autentifikatsiya": {
+                "status": "Mavjud",
+                "improvements": "Qo'shimcha tasdiqlash va xavfsizlik funktsiyalari kiritilishi mumkin."
+            },
+            "Fanlar va imtihonlar uchun API": {
+                "status": "Asosiy CRUD operatsiyalari mavjud."
+            },
+            "Talabalarni imtihonga tayinlash va natijalar": {
+                "status": "Mavjud",
+                "improvements": "Yanada kengaytirish va soddalashtirish imkoniyatlari mavjud."
+            },
+            "Bildirishnomalar va push bildirishnomalar": {
+                "status": "Kiritilgan",
+                "improvements": "Yanada takomillashtirilishi mumkin."
+            },
+            "Monitoring va hisobotlar": {
+                "status": "Umumiy hisobotlar tayyorlash imkoniyati mavjud.",
+                "improvements": "Yanada yaxshilanishi kerak."
+            },
+            "Sinov va hujjatlash": {
+                "status": "Hali ham",
+                "improvements": "Batafsil testlar va hujjatlarni qo'shish zarurati mavjud."
+            }
+        }
+
+        return Response(evaluation_factors)
+
+
+
+
