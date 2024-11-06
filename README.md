@@ -1,6 +1,5 @@
-# Django-Boilerplate
+ExamineManagementSystem
 
-Django-Boilerplate for start a new project
 
 ## How to set up project (with Docker)
 
@@ -36,12 +35,12 @@ cp .env.example .env
 
 ```bash
 sudo -u postgres psql
-CREATE DATABASE django_boilerplate;
-CREATE USER django_boilerplate WITH PASSWORD 'django_boilerplate';
-ALTER ROLE django_boilerplate SET client_encoding TO 'utf8';
-ALTER ROLE django_boilerplate SET default_transaction_isolation TO 'read committed';
-ALTER ROLE django_boilerplate SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE django_boilerplate TO django_boilerplate;
+CREATE DATABASE exam;
+CREATE USER django_boilerplate WITH PASSWORD 'exam';
+ALTER ROLE exam SET client_encoding TO 'utf8';
+ALTER ROLE exam SET default_transaction_isolation TO 'read committed';
+ALTER ROLE exam SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE exam TO exam;
 \q
 ```
 
