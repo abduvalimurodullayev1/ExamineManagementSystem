@@ -43,7 +43,6 @@ def health_check_redis(request):
         )
 
 
-# Subject modeliga oid API'lar
 class ListSubjectView(ListAPIView):
     serializer_class = SubjectSerializer
     queryset = Subjects.objects.all()
