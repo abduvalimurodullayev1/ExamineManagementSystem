@@ -88,12 +88,10 @@ class ExamResult(models.Model):
     class Meta:
         verbose_name = _("ExamResult")
         verbose_name_plural = _("ExamResults")
-        # unique_together = ('student', 'exam')  # Bu talabaga va imtihonga bo'lgan noyoblikni belgilaydi
 
     def calculate_and_save_result(self):
         score_percentage = self.exam.calculate_score(self.student)
 
-        # Yozuvni yangilash yoki yangisini yaratish
         exam_result, created = ExamResult.objects.get_or_create(student=self.student, exam=self.exam)
         exam_result.score = score_percentage
         exam_result.passed = score_percentage >= self.exam.passing_percentage
