@@ -9,7 +9,7 @@ app = Celery("core")
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
-# - namespace='CELERY' means all 
+# - 
 #   should 
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
