@@ -8,7 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings.base")
 app = Celery("core")
 
 # Using a string here means the worker doesn't have to serialize
-# the configuration object to child processes.
+# the configuration object to child 
 # - 
 #   should 
 app.config_from_object("django.conf:settings", namespace="CELERY")
