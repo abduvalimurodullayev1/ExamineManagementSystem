@@ -37,3 +37,6 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
+
+    def token(self):
+        pass
