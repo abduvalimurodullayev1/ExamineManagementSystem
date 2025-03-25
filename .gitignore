@@ -1,3 +1,74 @@
-.idea/
-.env/
-firebase_admin.json/
+# Python umumiy fayllari
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual muhit
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Django maxsus fayllari
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Paketlar va dependency fayllar
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+coverage.xml
+*.cover
+htmlcov/
+
+# IDE va muharrirlar
+*.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.swp
+
+# Operatsion tizim fayllari
+.DS_Store
+Thumbs.db
+
+# Test va dokumentatsiya
+docs/_build/
+*.pytest_cache/
+tests/__pycache__/
+
+# Muvaqqat fayllar
+*.bak
+*.tmp
+*.temp
+
+# Agar siz ma'lumotlarni saqlash uchun maxsus kataloglardan foydalansangiz
+data/
+uploads/
+
+# Agar Celery ishlatilsa
+celerybeat-schedule
+celerybeat.pid
+
+# Agar siz Docker ishlatayotgan bo‘lsangiz
+*.env
+docker-compose.override.yml
+
+# Agar siz Docker Compose ishlatayotgan bo‘lsangiz

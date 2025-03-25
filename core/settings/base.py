@@ -292,4 +292,4 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 
 from datetime import timedelta
 
-...
+

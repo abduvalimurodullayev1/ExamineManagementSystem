@@ -2,6 +2,7 @@ JAZZMIN_SETTINGS = {
     "site_title": "OnlineBookAdmin",
 
     "site_header": "OnlineBook",
+    "language_chooser": True,
 
     "site_brand": "OnlineBookAdmin",
 
@@ -72,7 +73,6 @@ JAZZMIN_SETTINGS = {
 
     "changeform_format": "horizontal_tabs",
     "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
-    "language_chooser": True,
 }
 
 JAZZMIN_UI_TWEAKS = {

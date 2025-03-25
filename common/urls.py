@@ -15,13 +15,9 @@ urlpatterns = [
     path("ExamineDelete/<int:pk>", ExamineDelete.as_view(), name="examine_delete"),
     path("ExamineUpdate/<int:pk>", ExamineUpdate.as_view(), name="ExamineUpdate"),
     path("ListExamine", ListExamine.as_view(), name="list-examine"),
-    # talabalarni tayinlash imtihonga
     path("AssignCreate/<int:exam_id>", AssignCreate.as_view(), name="assign_create"),
     path("AssignMentStudent", AssignMentStudent.as_view(), name="list"),
-    # test options
-    # path("SubmitTest/<int:id>/", SubmitTestView.as_view(), name="submit"),
     path("SubmitAnswer/<int:exam_id>/", SubmitTestView.as_view(), name="submit_answer"),
-    # path("QuestionDetail/<int:pk>/", QuestionDetail.as_view(), name="question"),
     path('api/reports/exams', ExamReportsView.as_view(), name='exam-reports'),
     path('results/pdf/', GeneratePdf.as_view(), name='generate_pdf'),
     path('evaluation/', ProjectEvaluationView.as_view(), name='project-evaluation'),
