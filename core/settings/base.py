@@ -43,8 +43,9 @@ DJANGO_APPS = [
 
 CUSTOM_APPS = [
     # "common",
-    'common.apps.CommonConfig',
-    "users",
+    # 'common.apps.CommonConfig',
+    "apps.users",
+    "apps.exam",
 
 ]
 
@@ -110,7 +111,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "core.wsgi.application"
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = 'users.User'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
