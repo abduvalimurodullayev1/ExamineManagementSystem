@@ -105,7 +105,7 @@ class QuestionScore(models.Model):
     order = models.PositiveIntegerField(default=0, verbose_name=_("Order"))
 
     class Meta:
-        unique_together = ('exam', 'question')
+        unique_together = ('question', 'exam')
         verbose_name = _("Question Score")
         verbose_name_plural = _("Question Scores")
 
@@ -119,25 +119,15 @@ class Submission(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, verbose_name=_("Exam"))
     student = models.ForeignKey("users.User", on_delete=models.CASCADE, verbose_name=_("Student"))
     started_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Started At"))
-    submitted_at = models.DateTimeField(default=timezone.now, verbose_name=_("Submitted At"))
+    submitted_at = models.DateTimeField(default=timezone.now, verbose_name=_("Submitted At"), )
     finished_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Finished At"))
     answers = models.JSONField(verbose_name=_("Answers"))
     score = models.FloatField(verbose_name=_("Score"), null=True, blank=True)
-    status = models.CharField(max_length=20, choices=SubmissionStatus.choices, default=SubmissionStatus.DRAFT,
-                              verbose_name=_("Status"))
+    status = models.CharField(max_length=20, choices=SubmissionStatus.choices, default=SubmissionStatus.DRAFT, verbose_name=_("Status"))
     feedback = models.TextField(blank=True, null=True, verbose_name=_("Feedback"))
-    evaluated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True,
-                                     verbose_name=_("Evaluated by"), related_name="evaluated_submissions")
+    evaluated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Evaluated by"), related_name="evaluated_submissions")
     attempt_number = models.PositiveIntegerField(default=1, verbose_name=_("Attempt Number"))
-
-    class Meta:
-        verbose_name = _("Submission")
-        verbose_name_plural = _("Submissions")
-        unique_together = ('exam', 'student', 'attempt_number')
-        indexes = [models.Index(fields=['student', 'submitted_at'])]
-
-    def __str__(self):
-        return f"{self.student.username} - {self.exam.subject} (Attempt {self.attempt_number})"
+    file = models.FileField(upload_to='submissions/%Y/%m/%d/', null=True, blank=True, verbose_name=_("Submitted File"))
 
     def calculate_score(self):
         total_score = 0
@@ -154,6 +144,14 @@ class Submission(models.Model):
         self.status = self.SubmissionStatus.SUBMITTED
         self.save()
 
+    class Meta:
+        unique_together = ('exam', 'student', 'attempt_number')
+        indexes = [models.Index(fields=['student', 'submitted_at'])]
+        verbose_name = _("Submission")
+        verbose_name_plural = _("Submissions")
+
+    def __str__(self):
+        return f"{self.student.username} - {self.exam.subject} (Attempt {self.attempt_number})"
 
 class ExamGroup(models.Model):
     name = models.CharField(max_length=100, verbose_name=_("Name"))

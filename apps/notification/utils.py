@@ -25,5 +25,7 @@ def send_push_notification(notification, group=None):
         else:
             body["included_segments"] = ["Active Users"]
         client.send_notification(body)
+        notification.is_sent = True
+        notification.save()
     except Exception as e:
         print(f"Push notification error: {e}")
