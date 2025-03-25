@@ -46,7 +46,9 @@ CUSTOM_APPS = [
     # 'common.apps.CommonConfig',
     "apps.users",
     "apps.exam",
-    "apps.notification"
+    "apps.notification",
+    "apps.common",
+
 
 ]
 
@@ -293,5 +295,9 @@ CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 
 from datetime import timedelta
+
+ONESIGNAL_AUTH_KEY = env.str("ONESIGNAL_AUTH_KEY")
+ONESIGNAL_APP_ID = env.str("ONESIGNAL_APP_ID")
+ONESIGNAL_REST_KEY = env.str("ONESIGNAL_REST_KEY")
 
 
