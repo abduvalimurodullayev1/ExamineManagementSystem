@@ -20,7 +20,8 @@ class BaseModel(models.Model):
 class User(AbstractUser):
     ROLE_CHOICES = [
         ("admin", "Admin"),
-        ("student", "Student")
+        ("student", "Student"),
+        ("teacher", "Teacher"),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="student")
     username = models.CharField(max_length=150, unique=False, null=True, blank=True, verbose_name=_("username"))
