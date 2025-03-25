@@ -10,7 +10,7 @@ from django.conf import settings
 class Notification(models.Model):
     class NotificationTypeChoices(models.TextChoices):
         NEWS = "news", _("News")
-        EXAM = "exam", _("Exam")
+        EXAM = "exam_list", _("Exam")
         ANNOUNCEMENT = "announcement", _("E'lon")
         OTHER = "other", _("Other")
 
@@ -51,7 +51,7 @@ class Notification(models.Model):
         return f"{settings.HOST}{self.cover.url}" if self.cover else ""
 
     def push(self, group=None):
-        from utils.notifications import send_push_notification
+        from apps.notification.utils import send_push_notification
         send_push_notification(self, group)
 
     class Meta:
