@@ -46,6 +46,7 @@ CUSTOM_APPS = [
     # 'common.apps.CommonConfig',
     "apps.users",
     "apps.exam",
+    "apps.notification"
 
 ]
 
