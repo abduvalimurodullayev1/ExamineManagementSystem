@@ -11,6 +11,7 @@ from .schema import swagger_urlpatterns
 urlpatterns = [
     path("admin/", admin.site.urls),
     # path("common/", include("common.urls", namespace="common")),
+    path("exam/", include("apps.exam.urls", namespace="exam")),
     path("user/", include("apps.users.urls", namespace="users")),
     path('i18n/', set_language, name='set_language'),
     path('api-auth/', include('rest_framework.urls')),
