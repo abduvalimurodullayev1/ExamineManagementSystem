@@ -4,34 +4,39 @@ from apps.exam.models import Exam, Submission
 from apps.notification.models import Notification, UserNotification
 from django.utils import timezone
 
-
 @receiver(post_save, sender=Exam)
 def notify_exam_status(sender, instance, created, **kwargs):
-    if instance.status == "active" and instance.is_published and created:
+    if instance.status == Exam.ExamStatus.ACTIVE and instance.is_published and not created:
         notification = Notification.objects.create(
-            type="list_exam",
-            title_uz=f"Imtihon boshlandi: {instance.subject.title}",
-            title_ru=f"Экзамен начался: {instance.subject.title}",
-            description_uz=f"{instance.subject.title} imtihoni boshlandi.",
-            description_ru=f"Экзамен по {instance.subject.title} начался.",
+            type=Notification.NotificationTypeChoices.EXAM,
+            title=f"Exam Started: {instance.subject.title}",
+            description=f"The {instance.subject.title} exam has started.",
+            content_text=f"Start Time: {instance.start_time}",
             content=instance,
-            delivery_time=instance.start_time
+            delivery_time=instance.start_time,
+            created_by=instance.created_by
         )
         for group in instance.examgroup_set.all():
-            notification.push(group=group)
+            from apps.notification.task import send_group_notification
+            send_group_notification.delay(notification.id, group.id)
 
 
 @receiver(post_save, sender=Submission)
 def notify_submission_evaluated(sender, instance, **kwargs):
-    if instance.status == "evaluated":
+    if instance.status == Submission.SubmissionStatus.EVALUATED:
         notification = Notification.objects.create(
-            type="list_exam",
-            title_uz=f"Natijangiz chiqdi: {instance.exam.subject.title}",
-            title_ru=f"Результаты готовы: {instance.exam.subject.title}",
-            description_uz=f"Ball: {instance.score}",
-            description_ru=f"Балл: {instance.score}",
+            type=Notification.NotificationTypeChoices.SUBMISSION,
+            title=f"Results Ready: {instance.exam.subject.title}",
+            description=f"Your score: {instance.score}",
+            content_text=f"Feedback: {instance.feedback or 'No feedback provided'}",
             content=instance,
-            delivery_time=timezone.now()
+            delivery_time=timezone.now(),
+            created_by=instance.evaluated_by
         )
-        UserNotification.objects.create(user=instance.student, notification=notification)
-        notification.push()
+        UserNotification.objects.create(
+            user=instance.student,
+            notification=notification
+        )
+        from apps.notification.task import send_user_notification
+        send_user_notification.delay(notification.id, instance.student.id)
+
