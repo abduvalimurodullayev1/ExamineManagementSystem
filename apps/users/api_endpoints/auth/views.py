@@ -5,8 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from apps.users.api_endpoints.auth.serializers import *
 from rest_framework.response import Response
 from rest_framework import status
-
-
+from django.conf import settings
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
@@ -50,3 +49,8 @@ class ResetPasswordView(APIView):
         user.save()
 
         return Response({"detail": "Password successfully changed"}, status=status.HTTP_200_OK)
+
+
+
+class VerificationTokenView(APIView):
+    pass
