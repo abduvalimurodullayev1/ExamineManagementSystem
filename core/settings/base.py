@@ -30,7 +30,7 @@ FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "firebase_admin.json")
 
 # Application definition
 DJANGO_APPS = [
-    # "jazzmin",
+    "jazzmin",
     "django.contrib.admin",
     'debug_toolbar',
     "django.contrib.auth",
