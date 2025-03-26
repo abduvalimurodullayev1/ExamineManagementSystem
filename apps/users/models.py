@@ -41,7 +41,7 @@ class User(AbstractUser):
         help_text=_("Optional unique username")
     )
     verification_token = models.CharField(
-        max_length=6,
+        max_length=120,
         blank=True,
         verbose_name=_("Verification Code"),
         help_text=_("6-digit code for email verification")
