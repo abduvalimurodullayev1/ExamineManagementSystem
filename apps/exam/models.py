@@ -38,16 +38,19 @@ class Exam(models.Model):
         PRACTICAL = "practical", _("Practical")
 
     exam_type = models.CharField(max_length=20, choices=ExamTypes, default=ExamTypes.MCQ, verbose_name=_("Exam Type"))
-    status = models.CharField(max_length=10, choices=ExamStatus.choices, default=ExamStatus.DRAFT, verbose_name=_("Status"))
+    status = models.CharField(max_length=10, choices=ExamStatus.choices, default=ExamStatus.DRAFT,
+                              verbose_name=_("Status"))
     duration = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Duration (minutes)"))
     subject = models.ForeignKey(Subjects, on_delete=models.CASCADE, verbose_name=_("Subject"))
     start_time = models.DateTimeField(verbose_name=_("Start Time"))
     end_time = models.DateTimeField(null=True, blank=True, verbose_name=_("End Time"))
     created_by = models.ForeignKey('users.User', on_delete=models.CASCADE, verbose_name=_("Created by"))
     max_score = models.PositiveIntegerField(verbose_name=_("Max Score"), default=100)
-    calculated_total_score = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Calculated Total Score"))
+    calculated_total_score = models.PositiveIntegerField(null=True, blank=True,
+                                                         verbose_name=_("Calculated Total Score"))
     questions = models.ManyToManyField("Question", through="QuestionScore", verbose_name=_("Questions"), blank=True)
-    attempt_limit = models.PositiveIntegerField(default=1, verbose_name=_("Attempt Limit"), help_text=_("0 for unlimited"))
+    attempt_limit = models.PositiveIntegerField(default=1, verbose_name=_("Attempt Limit"),
+                                                help_text=_("0 for unlimited"))
     passing_score = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("Passing Score"))
     is_published = models.BooleanField(default=False, verbose_name=_("Is Published"))
     is_timed = models.BooleanField(default=True, verbose_name=_("Is Timed"))
@@ -75,12 +78,23 @@ class Exam(models.Model):
         total = QuestionScore.objects.filter(exam=self).aggregate(total=Sum('score'))['total'] or 0
         self.calculated_total_score = total
         if total != self.max_score:
-            raise ValidationError(_("Total score of questions (%s) does not match max_score (%s)." % (total, self.max_score)))
+            raise ValidationError(
+                _("Total score of questions (%s) does not match max_score (%s)." % (total, self.max_score)))
         self.save(update_fields=['calculated_total_score'])
 
     def is_active(self):
         now = timezone.now()
         return self.status == self.ExamStatus.ACTIVE and self.start_time <= now <= (self.end_time or now)
+
+    def update_status(self):
+        now = timezone.now()
+        if now < self.start_time:
+            self.status = self.ExamStatus.SCHEDULED
+        elif self.start_time <= now <= (self.end_time or now):
+            self.status = self.ExamStatus.ACTIVE
+        else:
+            self.status = self.ExamStatus.FINISHED
+        self.save(update_fields=['status'])
 
     class Meta:
         indexes = [
@@ -105,27 +119,34 @@ class Question(models.Model):
 
     subject = models.ForeignKey(Subjects, on_delete=models.CASCADE, verbose_name=_("Subject"))
     body = models.TextField(verbose_name=_("Question Body"))
-    correct_answer = models.TextField(verbose_name=_("Correct Answer"), blank=True, null=True)
-    options = models.JSONField(verbose_name=_("Options"), blank=True, null=True, help_text=_("JSON format: [{'id': 1, 'text': 'Option A'}, ...]"))
     type = models.CharField(max_length=50, choices=QuestionTypes, default=QuestionTypes.MCQ, verbose_name=_("Type"))
-    difficulty_level = models.PositiveSmallIntegerField(default=1, verbose_name=_("Difficulty Level"), help_text=_("1-5 scale"))
+    difficulty_level = models.PositiveSmallIntegerField(default=1, verbose_name=_("Difficulty Level"),
+                                                        help_text=_("1-5 scale"))
     attachment = models.FileField(upload_to='questions/%Y/%m/%d/', null=True, blank=True, verbose_name=_("Attachment"))
 
     def clean(self):
-        if self.type == self.QuestionTypes.MCQ and (not self.options or not self.correct_answer):
-            raise ValidationError(_("Multiple Choice questions must have options and a correct answer."))
-        if self.type == self.QuestionTypes.ESSAY and (self.options or self.correct_answer):
-            raise ValidationError(_("Essay questions should not have options or a correct answer."))
-        if self.type == self.QuestionTypes.TRUE_FALSE and self.correct_answer not in ["true", "false", None]:
-            raise ValidationError(_("True/False questions must have 'true' or 'false' as correct answer."))
+        if self.type == self.QuestionTypes.MCQ:
+            options = self.options.all()  # related_name='options'
+            if len(options) < 2:
+                raise ValidationError(_("MCQ must have at least 2 options."))
+            correct_count = sum(1 for opt in options if opt.is_correct)
+            if correct_count != 1:
+                raise ValidationError(_("MCQ must have exactly one correct option."))
+        elif self.type == self.QuestionTypes.ESSAY and self.options.exists():
+            raise ValidationError(_("Essay questions cannot have options."))
+
+
+class QuestionOption(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options', verbose_name=_("Question"))
+    option_text = models.CharField(max_length=255, verbose_name=_("Option Text"))
+    is_correct = models.BooleanField(default=False, verbose_name=_("Is Correct"))
 
     class Meta:
-        verbose_name = _("Question")
-        verbose_name_plural = _("Questions")
-        indexes = [models.Index(fields=['subject', 'type', 'difficulty_level'])]
+        verbose_name = _("Question Option")
+        verbose_name_plural = _("Question Options")
 
     def __str__(self):
-        return self.body[:50]
+        return self.option_text
 
 
 class QuestionScore(models.Model):
@@ -157,11 +178,12 @@ class Submission(models.Model):
     started_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Started At"))
     submitted_at = models.DateTimeField(default=timezone.now, verbose_name=_("Submitted At"))
     finished_at = models.DateTimeField(null=True, blank=True, verbose_name=_("Finished At"))
-    answers = models.JSONField(verbose_name=_("Answers"), help_text=_("Format: {question_id: answer}"))
     score = models.FloatField(verbose_name=_("Score"), null=True, blank=True)
-    status = models.CharField(max_length=20, choices=SubmissionStatus.choices, default=SubmissionStatus.DRAFT, verbose_name=_("Status"))
+    status = models.CharField(max_length=20, choices=SubmissionStatus.choices, default=SubmissionStatus.DRAFT,
+                              verbose_name=_("Status"))
     feedback = models.TextField(blank=True, null=True, verbose_name=_("Feedback"))
-    evaluated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Evaluated by"), related_name="evaluated_submissions")
+    evaluated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name=_("Evaluated by"), related_name="evaluated_submissions")
     attempt_number = models.PositiveIntegerField(default=1, verbose_name=_("Attempt Number"))
     file = models.FileField(
         upload_to='submissions/%Y/%m/%d/',
@@ -267,3 +289,31 @@ class QuestionStatistics(models.Model):
         self.save()
 
 
+class Answer(models.Model):
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='answers',
+                                   verbose_name=_("Submission"), related_query_name="answers")
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, verbose_name=_("Question"), related_name="answers")
+    answer_text = models.TextField(null=True, blank=True, verbose_name=_("Answer Text"))
+    answer_file = models.FileField(upload_to='answers/%Y/%m/%d/', null=True, blank=True, verbose_name=_("Answer File"))
+
+    def clean(self):
+        if self.question.type == 'mcq':
+            if not self.answer_text:
+                raise ValidationError("MCQ requires an answer_text.")
+            valid_options = [opt.option_text for opt in self.question.options.all()]
+            if self.answer_text not in valid_options:
+                raise ValidationError("Answer must be one of the provided options.")
+        elif self.question.type == 'essay' and not (self.answer_text or self.answer_file):
+            raise ValidationError("Essay requires either answer_text or answer_file.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        unique_together = ('submission', 'question')
+        verbose_name = _("Answer")
+        verbose_name_plural = _("Answers")
+
+    def __str__(self):
+        return f"Answer to {self.question} by {self.submission.student}"
