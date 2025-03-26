@@ -10,7 +10,7 @@ from django.conf import settings
 class Notification(models.Model):
     class NotificationTypeChoices(models.TextChoices):
         NEWS = "news", _("News")
-        EXAM = "exam_list", _("Exam")
+        EXAM = "exam", _("Exam")
         ANNOUNCEMENT = "announcement", _("E'lon")
         OTHER = "other", _("Other")
 

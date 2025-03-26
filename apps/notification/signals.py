@@ -9,7 +9,7 @@ from django.utils import timezone
 def notify_exam_status(sender, instance, created, **kwargs):
     if instance.status == "active" and instance.is_published and created:
         notification = Notification.objects.create(
-            type="exam_list",
+            type="list_exam",
             title_uz=f"Imtihon boshlandi: {instance.subject.title}",
             title_ru=f"Экзамен начался: {instance.subject.title}",
             description_uz=f"{instance.subject.title} imtihoni boshlandi.",
@@ -25,7 +25,7 @@ def notify_exam_status(sender, instance, created, **kwargs):
 def notify_submission_evaluated(sender, instance, **kwargs):
     if instance.status == "evaluated":
         notification = Notification.objects.create(
-            type="exam_list",
+            type="list_exam",
             title_uz=f"Natijangiz chiqdi: {instance.exam.subject.title}",
             title_ru=f"Результаты готовы: {instance.exam.subject.title}",
             description_uz=f"Ball: {instance.score}",
