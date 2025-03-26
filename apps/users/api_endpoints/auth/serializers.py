@@ -27,16 +27,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class VerificationEmailSerializers(serializers.ModelSerializer):
-    email = serializers.EmailField()
-    verification_code = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ['email', 'verification_code']
-        extra_kwargs = {"password": {"write_only": True}}
-
-
 class ForgotChangeUserModelSerializer(serializers.ModelSerializer):
     new_password = serializers.CharField(max_length=120)
     confirm_password = serializers.CharField(max_length=120)
@@ -80,6 +70,7 @@ class LoginSerializer(serializers.Serializer):
         attrs["user"] = user
         return attrs
 
+
 class ResetPasswordSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
@@ -103,6 +94,28 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError({"token": "Invalid or expired token"})
+
+        attrs["user"] = user
+        return attrs
+
+
+
+
+class VerificationEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    verification_token = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        verification_token = attrs.get("verification_token")
+
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError("User with this email does not exist")
+
+        if user.verification_token != verification_token:
+            raise serializers.ValidationError("Invalid verification token")
 
         attrs["user"] = user
         return attrs

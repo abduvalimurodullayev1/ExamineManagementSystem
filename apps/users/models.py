@@ -9,7 +9,6 @@ from rest_framework.exceptions import ValidationError
 from apps.users.managers import UserManager
 
 
-# Define the function outside the model
 def activation_key_expiry():
     return timezone.now() + timezone.timedelta(hours=24)
 
@@ -41,8 +40,8 @@ class User(AbstractUser):
         verbose_name=_("Username"),
         help_text=_("Optional unique username")
     )
-    verification_code = models.CharField(
-        max_length=6,
+    verification_token = models.CharField(
+        max_length=120,
         blank=True,
         verbose_name=_("Verification Code"),
         help_text=_("6-digit code for email verification")
@@ -74,16 +73,15 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     objects = UserManager()
 
-    def generate_verification_code(self):
-        import random
-        self.verification_code = ''.join(random.choices('0123456789', k=6))
+    def generate_verification_token(self):
+        self.verification_token = uuid.uuid4()
         self.activation_key_expires = timezone.now() + timezone.timedelta(hours=24)
 
     def save(self, *args, **kwargs):
-        if not self.verification_code or self.activation_key_expires < timezone.now():
-            self.generate_verification_code()
+        if not self.verification_token or self.activation_key_expires < timezone.now():
+            self.generate_verification_token()
         if not self.username:
-            self.username = None  # Agar bo‘sh bo‘lsa, None qilish
+            self.username = None
         super().save(*args, **kwargs)
 
     def is_activation_key_valid(self):
