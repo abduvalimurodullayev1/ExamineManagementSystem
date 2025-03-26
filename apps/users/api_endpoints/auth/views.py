@@ -2,7 +2,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from apps.users.serializers import *
+from apps.users.api_endpoints.auth.serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 
