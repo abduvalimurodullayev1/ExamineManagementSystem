@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
-
+from apps.exam.models import Submission
 from apps.exam.answer.serializers import AnswerSerializer
 
 
@@ -68,3 +68,6 @@ class AnswerSubmitView(views.APIView):
         submission.submitted_at = now
         submission.save(update_fields=['submitted_at'])
         return Response({"message": "Answers submitted successfully", "submission_id": submission.id})
+
+
+__all__ = ['AnswerSubmitView']

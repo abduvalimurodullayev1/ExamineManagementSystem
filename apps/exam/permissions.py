@@ -9,3 +9,4 @@ class IsTeacher(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return request.user.role == User.ReleCHOICES.TEACHER
+

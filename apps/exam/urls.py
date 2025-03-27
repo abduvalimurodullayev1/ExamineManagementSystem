@@ -11,4 +11,5 @@ app_name = "exam"
 urlpatterns = [
     path("create/", ExamCreateView.as_view(), name="exam_create"),
     path("list/", ListExamView.as_view(), name="exam_list"),
+    path("")
 ]
