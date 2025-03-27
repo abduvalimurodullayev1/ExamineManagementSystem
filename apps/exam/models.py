@@ -57,6 +57,8 @@ class Exam(models.Model):
     randomize_questions = models.BooleanField(default=False, verbose_name=_("Randomize Questions"))
     tags = models.CharField(max_length=255, blank=True, verbose_name=_("Tags"), help_text=_("Comma-separated tags"))
     instructions = models.TextField(blank=True, verbose_name=_("Instructions"))
+    is_proctored = models.BooleanField(default=False, verbose_name=_("Is Proctored"))
+
 
     def clean(self):
         if self.is_timed and (self.duration is None or self.duration <= 0):

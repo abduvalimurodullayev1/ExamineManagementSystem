@@ -4,9 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from apps.exam.permissions import IsTeacher
 from apps.exam.models import Exam, Submission
-from apps.exam.api_endpoints.exam_finish.serializers import ExamFinishEarlySerializer
+from apps.exam.api_endpoints.exam_early.serializers import ExamFinishEarlySerializer
 from django.utils import timezone
-from telegram_bot import send_telegram_message
+# from telegram_bot import send_telegram_message
 from drf_yasg.utils import swagger_auto_schema
 
 class ExamFinishEarlyView(views.APIView):
@@ -28,7 +28,7 @@ class ExamFinishEarlyView(views.APIView):
             submissions.update(status='submitted', submitted_at=timezone.now())
             serializer = ExamFinishEarlySerializer(exam)
             message = f"Imtihon muddatidan oldin tugadi: {exam.subject}"
-            send_telegram_message(chat_id="group_chat_id", message=message)
+            # send_telegram_message(chat_id="group_chat_id", message=message)
             return Response(serializer.data)
         except Exam.DoesNotExist:
             return Response({"error": "Exam not found"}, status=404)
