@@ -2,9 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from django.db.models import Sum, Avg, Max, Min, Count, Q
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+from django.db.models import Sum
 from django.core.validators import FileExtensionValidator
 
 from apps.common.models import BaseModel
@@ -58,7 +56,6 @@ class Exam(models.Model):
     tags = models.CharField(max_length=255, blank=True, verbose_name=_("Tags"), help_text=_("Comma-separated tags"))
     instructions = models.TextField(blank=True, verbose_name=_("Instructions"))
     is_proctored = models.BooleanField(default=False, verbose_name=_("Is Proctored"))
-
 
     def clean(self):
         if self.is_timed and (self.duration is None or self.duration <= 0):
@@ -294,7 +291,8 @@ class QuestionStatistics(models.Model):
 class Answer(models.Model):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='answers',
                                    verbose_name=_("Submission"), related_query_name="answers")
-    question = models.ForeignKey('Question', on_delete=models.CASCADE, verbose_name=_("Question"), related_name="answers")
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, verbose_name=_("Question"),
+                                 related_name="answers")
     answer_text = models.TextField(null=True, blank=True, verbose_name=_("Answer Text"))
     answer_file = models.FileField(upload_to='answers/%Y/%m/%d/', null=True, blank=True, verbose_name=_("Answer File"))
 
@@ -319,3 +317,4 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"Answer to {self.question} by {self.submission.student}"
+
