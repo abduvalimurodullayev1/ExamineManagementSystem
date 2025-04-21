@@ -49,6 +49,3 @@ class ExamStatisticsAdmin(admin.ModelAdmin):
     list_display = ( 'highest_score', 'lowest_score', 'average_score', 'participants')
     list_filter = ('participants', 'average_score', 'highest_score', 'lowest_score')
     search_fields = ('exam__subject__title', )
-
-
-

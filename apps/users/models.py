@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator, FileExtensionValidator
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.common.models import Region, District
 from apps.users.managers import UserManager
 
 
@@ -114,9 +115,9 @@ class Profile(models.Model):
         validators=[RegexValidator(regex=r'^\+?1?\d{9,15}$', message=_(
             "Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."))]
     )
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True, verbose_name=_("Region"))
+    district = models.ForeignKey(District, on_delete=models.SET_NULL, null=True, blank=True)
     address = models.CharField(max_length=255, blank=True, verbose_name=_("Address"))
-    city = models.CharField(max_length=100, blank=True, verbose_name=_("City"))
-    country = models.CharField(max_length=100, blank=True, verbose_name=_("Country"))
     avatar = models.ImageField(
         upload_to='avatars/%Y/%m/%d/',
         blank=True,
