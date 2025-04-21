@@ -22,6 +22,28 @@ class Subjects(BaseModel):
         return self.title
 
 
+class ExamCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name=_("Kategoriya"))
+    description = models.TextField(max_length=500, blank=True, verbose_name=_("Tavsif"))
+
+    class Meta:
+        verbose_name = _("ExamCategory")
+        verbose_name_plural = _("ExamCategories")
+
+    def __str__(self):
+        return self.name
+
+
+class NationalStandard(models.Model):
+    code = models.CharField(max_length=50, unique=True, verbose_name=_("DTS kodi"))
+    title = models.CharField(max_length=200, verbose_name=_("Nomi"))
+    subject = models.ForeignKey(Subjects, on_delete=models.CASCADE, verbose_name=_("Fan"))
+
+    class Meta:
+        verbose_name = _("NationalStandart")
+        verbose_name_plural = _("NationalStandarts")
+
+
 class Exam(models.Model):
     class ExamStatus(models.TextChoices):
         DRAFT = "draft", _("Draft")
@@ -35,6 +57,7 @@ class Exam(models.Model):
         MIXED = "mixed", _("Mixed")
         PRACTICAL = "practical", _("Practical")
 
+    proctoring_url = models.URLField(blank=True, null=True, verbose_name=_("Proctoring havolasi"))
     exam_type = models.CharField(max_length=20, choices=ExamTypes, default=ExamTypes.MCQ, verbose_name=_("Exam Type"))
     status = models.CharField(max_length=10, choices=ExamStatus.choices, default=ExamStatus.DRAFT,
                               verbose_name=_("Status"))
@@ -56,6 +79,7 @@ class Exam(models.Model):
     tags = models.CharField(max_length=255, blank=True, verbose_name=_("Tags"), help_text=_("Comma-separated tags"))
     instructions = models.TextField(blank=True, verbose_name=_("Instructions"))
     is_proctored = models.BooleanField(default=False, verbose_name=_("Is Proctored"))
+    category = models.ForeignKey(ExamCategory, on_delete=models.SET_NULL, null=True, verbose_name=_("Category"))
 
     def clean(self):
         if self.is_timed and (self.duration is None or self.duration <= 0):
@@ -122,6 +146,7 @@ class Question(models.Model):
     difficulty_level = models.PositiveSmallIntegerField(default=1, verbose_name=_("Difficulty Level"),
                                                         help_text=_("1-5 scale"))
     attachment = models.FileField(upload_to='questions/%Y/%m/%d/', null=True, blank=True, verbose_name=_("Attachment"))
+    standard = models.ForeignKey(NationalStandard, on_delete=models.SET_NULL, null=True, verbose_name=_("DTS"))
 
     def clean(self):
         if self.type == self.QuestionTypes.MCQ:
@@ -191,6 +216,7 @@ class Submission(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'jpg'])],
         verbose_name=_("Submitted File")
     )
+    
 
     def calculate_score(self):
         total_score = 0
@@ -318,3 +344,9 @@ class Answer(models.Model):
     def __str__(self):
         return f"Answer to {self.question} by {self.submission.student}"
 
+
+class ProctoringLog(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    student = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    event = models.CharField(max_length=100, verbose_name=_("Hodisa"))
